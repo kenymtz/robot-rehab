@@ -1,0 +1,33 @@
+[project]
+name = "robotrehab"
+version = "0.1.0"
+description = "Can a simulated walker recover from dead neurons using only a memory of its healthy behavior?"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "gymnasium[mujoco]>=1.2",
+    "imageio[ffmpeg]>=2.34",
+    "matplotlib>=3.8",
+    "mujoco>=3.3",
+    "numpy>=1.26",
+    "pillow>=10.1",
+    "pytest>=8",
+    "pyyaml>=6",
+    "stable-baselines3>=2.6",
+    "torch>=2.4",
+]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

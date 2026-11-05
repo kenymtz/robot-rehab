@@ -1,0 +1,51 @@
+name: full
+smoke: false
+env_id: Walker2d-v5
+robots: [0, 1, 2]
+preflight:
+  min_disk_gb: 5
+  run_tests: true
+  speed_steps: 2000
+train:
+  initial_steps: 1000000
+  extend_steps: 500000
+  max_steps: 3000000
+  learning_starts: 10000
+  checkpoint_every: 100000
+gate:
+  episodes: 20
+  env_seed_start: 20000
+  min_return: 3000
+  min_survivors: 18
+  enforce: true
+memory:
+  pairs: 10000
+  repair_pairs: 8000
+  small_pairs: 1000
+  small_repair_pairs: 800
+  env_seed_start: 1000
+damage_curve:
+  fractions: [0.1, 0.2, 0.3, 0.4, 0.5]
+  patterns: [0, 1, 2]
+  episodes: 10
+  env_seed_start: 5000
+  max_ratio: 0.4
+  fallback: 0.5
+tune:
+  mutation:
+    budget: 5000
+    sigma: [0.002, 0.005, 0.01, 0.02, 0.05]
+    mutate_fraction: [0.05, 0.2]
+  ridge:
+    lam: [0.0001, 0.01, 1.0]
+  bc:
+    lr: [0.0001, 0.001]
+    steps: 2000
+    batch_size: 256
+final:
+  patterns: [100, 101, 102, 103, 104]
+  episodes: 20
+  env_seed_start: 10000
+report:
+  bootstrap: 10000
+  zip_name: results.zip

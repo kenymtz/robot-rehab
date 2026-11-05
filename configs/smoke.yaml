@@ -1,0 +1,51 @@
+name: smoke
+smoke: true
+env_id: Walker2d-v5
+robots: [0, 1]
+preflight:
+  min_disk_gb: 1
+  run_tests: true
+  speed_steps: 200
+train:
+  initial_steps: 2000
+  extend_steps: 0
+  max_steps: 2000
+  learning_starts: 100
+  checkpoint_every: 1000
+gate:
+  episodes: 2
+  env_seed_start: 20000
+  min_return: 3000
+  min_survivors: 18
+  enforce: false
+memory:
+  pairs: 200
+  repair_pairs: 160
+  small_pairs: 50
+  small_repair_pairs: 40
+  env_seed_start: 1000
+damage_curve:
+  fractions: [0.3, 0.5]
+  patterns: [0, 1]
+  episodes: 2
+  env_seed_start: 5000
+  max_ratio: 0.4
+  fallback: 0.5
+tune:
+  mutation:
+    budget: 20
+    sigma: [0.01]
+    mutate_fraction: [0.2]
+  ridge:
+    lam: [0.01]
+  bc:
+    lr: [0.001]
+    steps: 20
+    batch_size: 32
+final:
+  patterns: [100, 101]
+  episodes: 2
+  env_seed_start: 10000
+report:
+  bootstrap: 200
+  zip_name: results-smoke.zip
