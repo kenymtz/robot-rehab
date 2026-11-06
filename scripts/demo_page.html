@@ -1,0 +1,226 @@
+<title>Rehabilitación de Walker2d</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a patient's chart read top to bottom, three admissions in order, each with its live footage beside its measurements. */
+:root {
+  --bg: #eef2f4; --panel: #ffffff; --ink: #14242e; --muted: #546672; --line: #cfd9df;
+  --alive: #1d7f86; --dead: #d4503e; --track: #dfe6ea; --film: #1c2b36;
+  --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101a21; --panel: #17242d; --ink: #e6eef2; --muted: #9db0bb; --line: #2c3e4a;
+  --alive: #46b8bf; --dead: #f0735f; --track: #243440; --film: #0b1419; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #101a21; --panel: #17242d; --ink: #e6eef2; --muted: #9db0bb; --line: #2c3e4a;
+  --alive: #46b8bf; --dead: #f0735f; --track: #243440; --film: #0b1419; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+.page { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+h1, h2 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.08; }
+h2 { font-size: 25px; line-height: 1.2; }
+p { margin: 0; max-width: 66ch; }
+.lead { color: var(--muted); font-size: 18px; margin-top: 10px; }
+.notice { border-left: 3px solid var(--dead); padding: 2px 0 2px 12px; color: var(--muted); font-size: 14px; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; display: grid; gap: 16px; min-width: 0; }
+.stage { font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--alive); }
+.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.stack { display: grid; gap: 14px; min-width: 0; }
+video { width: 100%; display: block; background: var(--film); border-radius: 4px; aspect-ratio: 480 / 368; }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figcaption { font: 600 13px var(--mono); color: var(--muted); }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.fact b { display: block; font: 600 24px var(--mono); font-variant-numeric: tabular-nums; }
+.fact span { font-size: 13px; color: var(--muted); }
+label { font-weight: 700; display: block; margin-bottom: 6px; }
+input[type=range] { width: 100%; accent-color: var(--alive); }
+input[type=range]:focus-visible, button:focus-visible { outline: 2px solid var(--alive); outline-offset: 2px; }
+.ticks { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--muted); }
+.brain { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+canvas { width: 100%; max-width: 220px; aspect-ratio: 1; display: block; }
+.key { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: 700 14px var(--body); color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; cursor: pointer; }
+button[aria-pressed=true] { background: var(--alive); border-color: var(--alive); color: var(--panel); }
+svg text { font: 12px var(--mono); fill: var(--muted); }
+svg .value { fill: var(--ink); font-weight: 600; }
+.chart { width: 100%; height: auto; display: block; }
+.explain { color: var(--muted); font-size: 15px; }
+@media (max-width: 760px) { .split { grid-template-columns: minmax(0, 1fr); } .trio { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { video { animation: none; } }
+</style>
+
+<main class="page">
+  <header>
+    <h1>¿Puede un robot volver a caminar solo?</h1>
+    <p class="lead">Un robot simulado aprende a caminar, pierde parte de sus neuronas e intenta recuperarse usando solo el recuerdo de cómo se movía sano.</p>
+  </header>
+  <p class="notice" id="notice"></p>
+
+  <section>
+    <div class="stage">Etapa 1 · Aprende</div>
+    <h2>De caerse a caminar</h2>
+    <div class="split">
+      <figure><video id="learnVideo" muted autoplay loop playsinline></video><figcaption id="learnCaption"></figcaption></figure>
+      <div class="stack">
+        <div>
+          <label for="learnRange">Experiencia acumulada</label>
+          <input id="learnRange" type="range" min="0" step="1">
+          <div class="ticks" id="learnTicks"></div>
+        </div>
+        <div class="facts" id="learnFacts"></div>
+        <svg class="chart" id="learnChart" viewBox="0 0 420 190" role="img" aria-label="Rendimiento según los pasos de entrenamiento"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="stage">Etapa 2 · Se daña</div>
+    <h2>Cuántas neuronas puede perder</h2>
+    <div class="split">
+      <figure><video id="damageVideo" muted autoplay loop playsinline></video><figcaption id="damageCaption"></figcaption></figure>
+      <div class="stack">
+        <div>
+          <label for="damageRange">Neuronas muertas</label>
+          <input id="damageRange" type="range" min="0" step="1">
+          <div class="ticks" id="damageTicks"></div>
+        </div>
+        <div class="facts" id="damageFacts"></div>
+        <div class="brain">
+          <figure><canvas id="h1" width="220" height="220"></canvas><figcaption>Capa 1 · 256 neuronas</figcaption></figure>
+          <figure><canvas id="h2" width="220" height="220"></canvas><figcaption>Capa 2 · 256 neuronas</figcaption></figure>
+        </div>
+        <div class="key"><span><i style="background:var(--alive)"></i>Viva</span><span><i style="background:var(--dead)"></i>Muerta</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="stage">Etapa 3 · Se repara</div>
+    <h2>Intentos de recuperación, sin recompensa ni simulador</h2>
+    <div class="choices" id="methodChoices"></div>
+    <p class="explain" id="methodExplain"></p>
+    <div class="trio">
+      <figure><video id="triHealthy" muted autoplay loop playsinline></video><figcaption>Sano</figcaption></figure>
+      <figure><video id="triDamaged" muted autoplay loop playsinline></video><figcaption id="triDamagedCaption">Dañado</figcaption></figure>
+      <figure><video id="triRepaired" muted autoplay loop playsinline></video><figcaption id="triRepairedCaption">Reparado</figcaption></figure>
+    </div>
+    <div class="facts" id="methodFacts"></div>
+    <svg class="chart" id="recoveryChart" viewBox="0 0 760 200" role="img" aria-label="Recuperación por método"></svg>
+    <p id="finding"></p>
+  </section>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById("data").textContent);
+const $ = id => document.getElementById(id);
+const whole = n => Math.round(n).toLocaleString("es-UY");
+const pct = n => n === null ? "sin dato" : Math.round(n * 100) + "%";
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const NAMES = { none: "Sin reparar", asr: "Reescalado", mutation: "Mutación con memoria", ridge: "Mínimos cuadrados", bc: "Clonación con gradientes" };
+const WHY = {
+  none: "El robot dañado, sin ninguna ayuda. Es el punto de partida.",
+  asr: "Reajusta la intensidad de cada neurona viva hasta recuperar la variación que tenía sana. No entrena nada.",
+  mutation: "El método principal. Prueba cambios al azar en los pesos y conserva solo los que acercan sus acciones a las del recuerdo. No usa gradientes.",
+  ridge: "Recalcula la última capa de una sola vez, con una regresión sobre las neuronas que sobrevivieron.",
+  bc: "Reentrena toda la red con el recuerdo usando gradientes. Rompe a propósito la regla de no usarlos, para ver cuánto se puede sacar de esa memoria."
+};
+const setVideo = (el, name) => { if (el.dataset.clip !== name) { el.dataset.clip = name; el.src = D.clips[name]; el.play().catch(() => {}); } };
+const facts = (el, rows) => { el.innerHTML = rows.map(([v, t]) => `<div class="fact"><b>${v}</b><span>${t}</span></div>`).join(""); };
+
+$("notice").textContent = `Demostración con ${whole(D.steps)} pasos de entrenamiento y un solo robot, medida en 5 patrones de daño. La corrida oficial entrena más y usa 3 robots, así que estos números pueden cambiar. Los videos muestran uno de esos patrones; los porcentajes de reparación son la mediana de los 5. Todo ocurre en simulación.`;
+{
+  const by = Object.fromEntries(D.methods.map(m => [m.method, m]));
+  const values = by.mutation.values, low = Math.min(...values), high = Math.max(...values);
+  $("finding").textContent = `Resultado: la mutación, que no usa gradientes, recuperó ${pct(by.mutation.recovery)} de lo perdido y caminó sin caerse en ${by.mutation.survivors} de ${by.mutation.episodes} intentos. Varía mucho según qué neuronas murieron: entre ${pct(low)} y ${pct(high)}. La clonación con gradientes sigue adelante, con ${pct(by.bc.recovery)} y ${by.bc.survivors} de ${by.bc.episodes}. Con su primera calibración, la mutación recuperaba 0%: necesitaba pasos más chicos y más intentos.`;
+}
+
+function learnChart(index) {
+  const L = D.learning, svg = $("learnChart"), W = 420, H = 190, m = { l: 48, r: 14, t: 12, b: 30 };
+  const maxX = L[L.length - 1].steps, maxY = Math.max(...L.map(p => p.return)) * 1.12;
+  const x = v => m.l + v / maxX * (W - m.l - m.r), y = v => H - m.b - v / maxY * (H - m.t - m.b);
+  const line = L.map((p, i) => `${i ? "L" : "M"}${x(p.steps).toFixed(1)} ${y(p.return).toFixed(1)}`).join(" ");
+  const step = Math.pow(10, Math.floor(Math.log10(maxY))) * (maxY / Math.pow(10, Math.floor(Math.log10(maxY))) > 5 ? 2 : 1);
+  let grid = "";
+  for (let v = 0; v <= maxY; v += step) grid += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${css("--line")}"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${whole(v)}</text>`;
+  const p = L[index];
+  svg.innerHTML = grid + `<path d="${line}" fill="none" stroke="${css("--alive")}" stroke-width="2"/>` +
+    L.map((q, i) => `<circle cx="${x(q.steps)}" cy="${y(q.return)}" r="${i === index ? 6 : 3}" fill="${css("--alive")}" stroke="${css("--panel")}" stroke-width="2"/>`).join("") +
+    `<text x="${(m.l + W - m.r) / 2}" y="${H - 6}" text-anchor="middle">pasos de entrenamiento (hasta ${whole(maxX)})</text>`;
+}
+function showLearn(index) {
+  const p = D.learning[index];
+  setVideo($("learnVideo"), "learn_" + p.steps);
+  $("learnCaption").textContent = p.steps === 0 ? "Sin entrenar" : whole(p.steps) + " pasos";
+  facts($("learnFacts"), [[whole(p.return), "rendimiento"], [`${p.survivors}/${p.episodes}`, "intentos sin caerse"], [p.distance.toFixed(1) + " m", "distancia media"]]);
+  learnChart(index);
+}
+$("learnRange").max = D.learning.length - 1;
+$("learnRange").value = D.learning.length - 1;
+$("learnTicks").innerHTML = D.learning.map(p => `<span>${p.steps >= 1000 ? p.steps / 1000 + "k" : p.steps}</span>`).join("");
+$("learnRange").oninput = e => showLearn(+e.target.value);
+
+function drawBrain(id, dead) {
+  const c = $(id), g = c.getContext("2d"), cell = c.width / 16, set = new Set(dead);
+  g.clearRect(0, 0, c.width, c.height);
+  for (let i = 0; i < 256; i++) {
+    g.fillStyle = css(set.has(i) ? "--dead" : "--alive");
+    g.fillRect(i % 16 * cell + 1, Math.floor(i / 16) * cell + 1, cell - 2, cell - 2);
+  }
+}
+function showDamage(index) {
+  const d = D.damage[index], tag = Math.round(d.fraction * 100);
+  setVideo($("damageVideo"), "damage_" + tag);
+  const chosen = d.fraction === D.level ? " · nivel elegido para reparar" : "";
+  $("damageCaption").textContent = tag + "% de neuronas muertas" + chosen;
+  facts($("damageFacts"), [[pct(d.ratio), "del rendimiento sano"], [`${d.survivors}/${d.episodes}`, "intentos sin caerse"], [String(d.killed.h1.length * 2), "neuronas muertas"]]);
+  drawBrain("h1", d.killed.h1); drawBrain("h2", d.killed.h2);
+}
+$("damageRange").max = D.damage.length - 1;
+$("damageRange").value = D.damage.findIndex(d => d.fraction === D.level);
+$("damageTicks").innerHTML = D.damage.map(d => `<span>${Math.round(d.fraction * 100)}%</span>`).join("");
+$("damageRange").oninput = e => showDamage(+e.target.value);
+
+function recoveryChart(active) {
+  const rows = D.methods.filter(r => r.method !== "none"), svg = $("recoveryChart");
+  const W = 760, H = 44 * rows.length + 34, left = 200, right = 70;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const vals = rows.map(r => r.recovery ?? 0), lo = Math.min(0, ...vals), hi = Math.max(1, ...vals);
+  const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+  let out = `<line x1="${x(0)}" x2="${x(0)}" y1="4" y2="${H - 26}" stroke="${css("--muted")}"/>` +
+    `<line x1="${x(1)}" x2="${x(1)}" y1="4" y2="${H - 26}" stroke="${css("--line")}" stroke-dasharray="4 3"/>` +
+    `<text x="${x(0)}" y="${H - 8}" text-anchor="middle">0%: nada</text><text x="${x(1)}" y="${H - 8}" text-anchor="middle">100%: como sano</text>`;
+  rows.forEach((r, i) => {
+    const y = 10 + i * 44, v = r.recovery ?? 0, a = Math.min(x(0), x(v)), w = Math.abs(x(v) - x(0));
+    out += `<text x="${left - 10}" y="${y + 17}" text-anchor="end" class="${r.method === active ? "value" : ""}">${NAMES[r.method]}</text>` +
+      `<rect x="${a}" y="${y + 3}" width="${Math.max(w, 2)}" height="20" rx="3" fill="${css(r.method === active ? "--alive" : "--track")}"/>` +
+      `<text x="${Math.max(x(v), x(0)) + 8}" y="${y + 18}" class="value">${pct(r.recovery)}</text>`;
+  });
+  svg.innerHTML = out;
+}
+function showMethod(method) {
+  const r = D.methods.find(m => m.method === method), tag = Math.round(D.level * 100);
+  document.querySelectorAll("#methodChoices button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === method));
+  $("methodExplain").textContent = WHY[method];
+  setVideo($("triHealthy"), "learn_" + D.steps);
+  setVideo($("triDamaged"), "repair_none");
+  setVideo($("triRepaired"), "repair_" + method);
+  $("triDamagedCaption").textContent = `Dañado · ${tag}%`;
+  $("triRepairedCaption").textContent = NAMES[method];
+  facts($("methodFacts"), [[pct(r.recovery), "de lo perdido volvió"], [`${r.survivors}/${r.episodes}`, "intentos sin caerse"], [whole(r.return), "rendimiento"]]);
+  recoveryChart(method);
+}
+$("methodChoices").innerHTML = D.methods.map(r => `<button type="button" data-m="${r.method}" aria-pressed="false">${NAMES[r.method]}</button>`).join("");
+$("methodChoices").onclick = e => { const b = e.target.closest("button"); if (b) showMethod(b.dataset.m); };
+
+function redraw() { showLearn(+$("learnRange").value); showDamage(+$("damageRange").value); showMethod(document.querySelector("#methodChoices [aria-pressed=true]")?.dataset.m || "mutation"); }
+redraw();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+</script>
