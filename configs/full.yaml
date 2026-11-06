@@ -33,9 +33,9 @@ damage_curve:
   fallback: 0.5
 tune:
   mutation:
-    budget: 5000
-    sigma: [0.002, 0.005, 0.01, 0.02, 0.05]
-    mutate_fraction: [0.05, 0.2]
+    budget: 30000
+    sigma: [0.001, 0.002, 0.005]
+    mutate_fraction: [0.02, 0.05]
   ridge:
     lam: [0.0001, 0.01, 1.0]
   bc:

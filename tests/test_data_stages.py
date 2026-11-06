@@ -19,5 +19,14 @@ def test_final_has_15_cases_per_condition_with_the_full_config():
     assert len(tasks) == 3 + 15 * len(CONDITIONS)
 
 
+def test_full_config_searches_with_small_steps_and_enough_budget():
+    section = load_config(PROJECT_ROOT / "configs" / "full.yaml")["tune"]["mutation"]
+    assert section["budget"] >= 30_000
+    assert 0.002 in section["sigma"]
+    assert max(section["sigma"]) <= 0.005
+    assert 0.02 in section["mutate_fraction"]
+    assert max(section["mutate_fraction"]) <= 0.05
+
+
 def test_case_names_are_unique():
     assert case_name(0, 100, "bc", "large") != case_name(0, 100, "bc", "small")
