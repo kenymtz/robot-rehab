@@ -6,4 +6,6 @@ runs/
 dist/
 results*.zip
 run.log
+run.err
+run.pid
 docs/superpowers/

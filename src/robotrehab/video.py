@@ -32,7 +32,7 @@ def compose(panels: list[list[np.ndarray]]) -> list[np.ndarray]:
 def render_frames(env_id: str, qpos: np.ndarray, qvel: np.ndarray) -> list[np.ndarray]:
     import gymnasium as gym
 
-    env = gym.make(env_id, render_mode="rgb_array", width=SIZE, height=SIZE)
+    env = gym.make(env_id, render_mode="rgb_array", width=SIZE, height=SIZE, camera_name="track")
     env.reset(seed=0)
     frames = []
     for index in range(0, len(qpos), STRIDE):

@@ -52,7 +52,43 @@ svg text { font: 12px var(--mono); fill: var(--muted); }
 svg .value { fill: var(--ink); font-weight: 600; }
 .chart { width: 100%; height: auto; display: block; }
 .explain { color: var(--muted); font-size: 15px; }
-@media (max-width: 760px) { .split { grid-template-columns: minmax(0, 1fr); } .trio { grid-template-columns: minmax(0, 1fr); } }
+h3 { font: 700 18px var(--display); margin: 0; }
+#officialVideo { aspect-ratio: 3 / 1; }
+.facts.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.forest { display: grid; min-width: 0; }
+.frow { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 3.5rem 6.5rem 5rem; gap: 4px 14px; align-items: center; padding-block: 7px; }
+.fhead { font: 12px var(--mono); color: var(--muted); padding-block: 0 4px; }
+.fgroup { font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-block: 14px 4px; border-bottom: 1px solid var(--line); }
+.fname { font-size: 15px; min-width: 0; }
+.fhead .fname { font: inherit; }
+.main .fname { font-weight: 700; }
+.fsub .fname, .fnote { color: var(--muted); font-size: 13px; }
+.ftrack { position: relative; height: 18px; min-width: 0; display: block; }
+.ftrack i { position: absolute; top: 50%; display: block; }
+.ftrack .tick { width: 1px; height: 100%; top: 0; background: var(--line); }
+.ftrack .tick.zero { background: var(--muted); }
+.ftrack .ci { height: 3px; transform: translateY(-50%); border-radius: 2px; background: var(--muted); }
+.ftrack .dot { width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--muted); box-shadow: 0 0 0 2px var(--panel); }
+.main .ftrack .ci, .main .ftrack .dot, .ftrack .case { background: var(--alive); }
+.ftrack .case { width: 9px; height: 9px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 1.5px var(--panel); }
+.axis { position: relative; height: 16px; display: block; min-width: 0; }
+.axis b { position: absolute; transform: translateX(-50%); font-weight: 400; }
+.fnum { font: 13px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.fnum.big { font-weight: 600; font-size: 15px; }
+.fnote { grid-column: 3 / -1; text-align: right; font-family: var(--mono); }
+.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; margin: 0; padding: 0; list-style: none; }
+.limits li { min-width: 0; font-size: 15px; color: var(--muted); }
+.limits b { display: block; color: var(--ink); }
+@media (max-width: 760px) {
+  .split { grid-template-columns: minmax(0, 1fr); } .trio { grid-template-columns: minmax(0, 1fr); }
+  .facts.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .limits { grid-template-columns: minmax(0, 1fr); }
+  .frow { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: 9px; }
+  .fname, .ftrack, .axis, .fnote { grid-column: 1 / -1; }
+  .fnum, .fnote { text-align: left; }
+  .fnum::before { content: attr(data-label); color: var(--muted); font-weight: 400; font-size: 11px; display: block; }
+  .fhead .fname, .fhead .fnum { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { video { animation: none; } }
 </style>
 
@@ -61,10 +97,24 @@ svg .value { fill: var(--ink); font-weight: 600; }
     <h1>¿Puede un robot volver a caminar solo?</h1>
     <p class="lead">Un robot simulado aprende a caminar, pierde parte de sus neuronas e intenta recuperarse usando solo el recuerdo de cómo se movía sano.</p>
   </header>
+
+  <section>
+    <div class="stage">Resultado oficial</div>
+    <h2 id="officialTitle"></h2>
+    <p id="officialLead"></p>
+    <figure><video id="officialVideo" muted autoplay loop playsinline></video><figcaption id="officialCaption"></figcaption></figure>
+    <div class="facts four" id="officialFacts"></div>
+    <h3>Recuperación por método</h3>
+    <div class="forest" id="forest"></div>
+    <p class="explain" id="forestKey"></p>
+    <h3>Qué no dice este resultado</h3>
+    <ul class="limits" id="limits"></ul>
+  </section>
+
   <p class="notice" id="notice"></p>
 
   <section>
-    <div class="stage">Etapa 1 · Aprende</div>
+    <div class="stage">Demostración · Etapa 1 · Aprende</div>
     <h2>De caerse a caminar</h2>
     <div class="split">
       <figure><video id="learnVideo" muted autoplay loop playsinline></video><figcaption id="learnCaption"></figcaption></figure>
@@ -81,7 +131,7 @@ svg .value { fill: var(--ink); font-weight: 600; }
   </section>
 
   <section>
-    <div class="stage">Etapa 2 · Se daña</div>
+    <div class="stage">Demostración · Etapa 2 · Se daña</div>
     <h2>Cuántas neuronas puede perder</h2>
     <div class="split">
       <figure><video id="damageVideo" muted autoplay loop playsinline></video><figcaption id="damageCaption"></figcaption></figure>
@@ -102,7 +152,7 @@ svg .value { fill: var(--ink); font-weight: 600; }
   </section>
 
   <section>
-    <div class="stage">Etapa 3 · Se repara</div>
+    <div class="stage">Demostración · Etapa 3 · Se repara</div>
     <h2>Intentos de recuperación, sin recompensa ni simulador</h2>
     <div class="choices" id="methodChoices"></div>
     <p class="explain" id="methodExplain"></p>
@@ -135,11 +185,50 @@ const WHY = {
 const setVideo = (el, name) => { if (el.dataset.clip !== name) { el.dataset.clip = name; el.src = D.clips[name]; el.play().catch(() => {}); } };
 const facts = (el, rows) => { el.innerHTML = rows.map(([v, t]) => `<div class="fact"><b>${v}</b><span>${t}</span></div>`).join(""); };
 
-$("notice").textContent = `Demostración con ${whole(D.steps)} pasos de entrenamiento y un solo robot, medida en 5 patrones de daño. La corrida oficial entrena más y usa 3 robots, así que estos números pueden cambiar. Los videos muestran uno de esos patrones; los porcentajes de reparación son la mediana de los 5. Todo ocurre en simulación.`;
+$("notice").textContent = `Desde acá sigue una demostración aparte y más chica: un robot, ${whole(D.steps)} pasos de entrenamiento y ${Math.round(D.level * 100)}% de daño en la reparación. Sirve para ver cómo cambia el robot en cada etapa, pero sus porcentajes no son el resultado oficial. Los videos muestran un patrón de daño; los porcentajes de reparación son la mediana de 5.`;
 {
   const by = Object.fromEntries(D.methods.map(m => [m.method, m]));
   const values = by.mutation.values, low = Math.min(...values), high = Math.max(...values);
-  $("finding").textContent = `Resultado: la mutación, que no usa gradientes, recuperó ${pct(by.mutation.recovery)} de lo perdido y caminó sin caerse en ${by.mutation.survivors} de ${by.mutation.episodes} intentos. Varía mucho según qué neuronas murieron: entre ${pct(low)} y ${pct(high)}. La clonación con gradientes sigue adelante, con ${pct(by.bc.recovery)} y ${by.bc.survivors} de ${by.bc.episodes}. Con su primera calibración, la mutación recuperaba 0%: necesitaba pasos más chicos y más intentos.`;
+  $("finding").textContent = `En esta demostración, la mutación, que no usa gradientes, recuperó ${pct(by.mutation.recovery)} de lo perdido y caminó sin caerse en ${by.mutation.survivors} de ${by.mutation.episodes} intentos. Varía mucho según qué neuronas murieron: entre ${pct(low)} y ${pct(high)}. La clonación con gradientes sigue adelante, con ${pct(by.bc.recovery)} y ${by.bc.survivors} de ${by.bc.episodes}. Con su primera calibración, la mutación recuperaba 0%: necesitaba pasos más chicos y más intentos.`;
+}
+
+{
+  const O = D.official, big = n => n.toLocaleString("es-UY");
+  const pick = (method, memory = "large") => O.conditions.find(c => c.method === method && c.memory === memory);
+  const main = pick("mutation"), smallMain = pick("mutation", "small"), clone = pick("bc"), tag = Math.round(O.level * 100);
+  const falls = main.episodes - main.survivors, best = O.cases.filter(c => c.recovery >= 0.9), worst = O.cases.filter(c => c.recovery < 0.5);
+  const worstPatterns = [...new Set(worst.map(c => c.pattern))].join(" y ");
+  const LO = -0.2, HI = 1.1, at = v => ((v - LO) / (HI - LO) * 100).toFixed(2) + "%";
+  const ticks = [0, 0.5, 1].map(v => `<i class="tick${v === 0 ? " zero" : ""}" style="left:${at(v)}"></i>`).join("");
+  const row = c => `<div class="frow${c === main ? " main" : ""}" title="${NAMES[c.method]}: mediana ${pct(c.median)}, intervalo ${pct(c.ci_low)} a ${pct(c.ci_high)}">
+    <span class="fname">${NAMES[c.method]}</span>
+    <span class="ftrack">${ticks}<i class="ci" style="left:${at(c.ci_low)};width:calc(${at(c.ci_high)} - ${at(c.ci_low)})"></i><i class="dot" style="left:${at(c.median)}"></i></span>
+    <span class="fnum big" data-label="Mediana">${pct(c.median)}</span>
+    <span class="fnum" data-label="IC 95%">${pct(c.ci_low)} a ${pct(c.ci_high)}</span>
+    <span class="fnum" data-label="Sin caerse">${c.survivors}/${c.episodes}</span></div>`;
+  const low = O.cases[0].recovery, high = O.cases[O.cases.length - 1].recovery;
+  const cases = `<div class="frow fsub"><span class="fname">Sus ${O.cases.length} casos, uno por punto</span>
+    <span class="ftrack">${ticks}${O.cases.map(c => `<i class="case" style="left:${at(c.recovery)}" title="Robot ${c.robot}, patrón ${c.pattern}: ${pct(c.recovery)}"></i>`).join("")}</span>
+    <span class="fnote">de ${pct(low)} a ${pct(high)}</span></div>`;
+  const group = memory => `<div class="fgroup">Memoria de ${big(O.pairs[memory])} pares</div>` +
+    O.conditions.filter(c => c.memory === memory).map(c => row(c) + (c === main ? cases : "")).join("");
+  const axis = `<div class="frow fhead"><span class="fname">Método</span><span class="axis">${[0, 0.5, 1].map(v => `<b style="left:${at(v)}">${pct(v)}</b>`).join("")}</span><span class="fnum">Mediana</span><span class="fnum">IC 95%</span><span class="fnum">Sin caerse</span></div>`;
+  $("forest").innerHTML = axis + group("large") + group("small");
+  $("forestKey").textContent = "Punto: mediana de recuperación. Línea: intervalo del 95%. 0% es quedar igual que el robot dañado y 100% es volver a su rendimiento sano.";
+  $("officialTitle").textContent = `La mutación recuperó ${pct(main.median)} de lo perdido, pero el robot todavía se cae`;
+  $("officialLead").textContent = `${O.robots} robots entrenados con ${big(O.steps)} pasos cada uno perdieron ${tag}% de sus neuronas, en ${O.patterns} patrones de daño que no se usaron para ajustar nada. La reparación principal usó solo la memoria de cómo se movían sanos, sin recompensa, sin simulador y sin gradientes. Cada caso se midió en ${O.attempts} intentos.`;
+  $("officialCaption").textContent = `Caso mediano: robot ${O.median_case.robot}, patrón ${O.median_case.pattern}, ${pct(O.median_case.recovery)} recuperado. Es un intento de cada uno. El panel dañado queda quieto porque ese intento terminó en caída.`;
+  $("officialVideo").src = O.video;
+  facts($("officialFacts"), [[pct(main.median), "de lo perdido volvió"], [`${main.survivors}/${main.episodes}`, "reparado, sin caerse"], [`${O.damaged.survivors}/${O.damaged.episodes}`, "dañado, sin caerse"], [`${O.healthy.survivors}/${O.healthy.episodes}`, "sano, sin caerse"]]);
+  const limits = [
+    ["Todavía se cae", `El robot reparado se cayó en ${falls} de ${main.episodes} intentos, ${pct(falls / main.episodes)} del total.`],
+    [`Vale para ${tag}% de daño`, `Ese nivel lo eligió una regla fija: el primero que baja el rendimiento mediano a ${pct(O.max_ratio)} o menos. Otros niveles no tuvieron medición oficial de reparación.`],
+    ["Los gradientes rinden más", `La clonación con gradientes llegó a ${pct(clone.median)}. La mutación solo tiene sentido donde no se pueden usar, y este experimento no mide qué tan común es eso.`],
+    ["Depende de qué neuronas mueren", `De ${O.cases.length} casos, ${best.length} llegaron a 90% o más y ${worst.length} quedaron debajo de 50%, ambos con el patrón ${worstPatterns}.`],
+    ["Depende de la memoria", `Con ${big(O.pairs.small)} pares en vez de ${big(O.pairs.large)}, la mutación bajó a ${pct(smallMain.median)}.`],
+    ["Es una prueba chica y simulada", `Son ${O.robots} robots y la falla es una máscara sobre las neuronas, no hardware real. El intervalo trata los ${O.cases.length} casos como independientes, así que probablemente sea más angosto de lo que debería.`]
+  ];
+  $("limits").innerHTML = limits.map(([t, d]) => `<li><b>${t}</b>${d}</li>`).join("");
 }
 
 function learnChart(index) {
@@ -178,7 +267,7 @@ function drawBrain(id, dead) {
 function showDamage(index) {
   const d = D.damage[index], tag = Math.round(d.fraction * 100);
   setVideo($("damageVideo"), "damage_" + tag);
-  const chosen = d.fraction === D.level ? " · nivel elegido para reparar" : "";
+  const chosen = d.fraction === D.level ? " · nivel usado en esta demostración" : "";
   $("damageCaption").textContent = tag + "% de neuronas muertas" + chosen;
   facts($("damageFacts"), [[pct(d.ratio), "del rendimiento sano"], [`${d.survivors}/${d.episodes}`, "intentos sin caerse"], [String(d.killed.h1.length * 2), "neuronas muertas"]]);
   drawBrain("h1", d.killed.h1); drawBrain("h2", d.killed.h2);

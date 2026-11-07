@@ -80,3 +80,31 @@ def test_compose_holds_the_last_frame_of_short_panels():
 def test_label_keeps_the_frame_size():
     frame = np.full((64, 64, 3), 255, dtype=np.uint8)
     assert label(frame, "Sano").shape == frame.shape
+
+
+def test_video_camera_follows_the_robot(monkeypatch):
+    import gymnasium as gym
+
+    from robotrehab import video
+
+    seen = {}
+
+    class FakeEnv:
+        unwrapped = type("Sim", (), {"set_state": lambda self, qpos, qvel: None})()
+
+        def reset(self, seed):
+            pass
+
+        def render(self):
+            return np.zeros((2, 2, 3), dtype=np.uint8)
+
+        def close(self):
+            pass
+
+    def fake_make(env_id, **kwargs):
+        seen.update(kwargs)
+        return FakeEnv()
+
+    monkeypatch.setattr(gym, "make", fake_make)
+    video.render_frames("Walker2d-v5", np.zeros((8, 9)), np.zeros((8, 9)))
+    assert seen["camera_name"] == "track"
