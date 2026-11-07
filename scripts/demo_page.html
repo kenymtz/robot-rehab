@@ -1,68 +1,88 @@
 <title>Rehabilitación de Walker2d</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Libre+Franklin:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: a patient's chart read top to bottom, three admissions in order, each with its live footage beside its measurements. */
+/* Layout: the simulator's sky runs into the page and the video sits on its horizon; below it, a patient's chart read top to bottom. Colors come from the simulator: sky, floor and the robot's plum limbs. */
 :root {
-  --bg: #eef2f4; --panel: #ffffff; --ink: #14242e; --muted: #546672; --line: #cfd9df;
-  --alive: #1d7f86; --dead: #d4503e; --track: #dfe6ea; --film: #1c2b36;
-  --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
-  --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", Consolas, monospace;
+  --sky: #425465; --on-sky: #f2f5f1; --on-sky-soft: #cfd9dc;
+  --bg: #edf2ea; --panel: #e2e9de; --ink: #1c2a33; --muted: #53626a; --line: #c9d3c6;
+  --alive: #86378c; --dead: #b4571f; --neuron: #1f9463; --track: #d8e0d3; --film: #26323c;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "Libre Franklin", "Segoe UI", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #101a21; --panel: #17242d; --ink: #e6eef2; --muted: #9db0bb; --line: #2c3e4a;
-  --alive: #46b8bf; --dead: #f0735f; --track: #243440; --film: #0b1419; color-scheme: dark } }
+  --bg: #18222b; --panel: #1f2b35; --ink: #e8eeea; --muted: #a6b5ba; --line: #33424d;
+  --alive: #bd72c4; --dead: #d2783d; --neuron: #38ac7c; --track: #2c3944; --film: #0e161c; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #101a21; --panel: #17242d; --ink: #e6eef2; --muted: #9db0bb; --line: #2c3e4a;
-  --alive: #46b8bf; --dead: #f0735f; --track: #243440; --film: #0b1419; color-scheme: dark }
-body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
-.page { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: grid; gap: 28px; }
-h1, h2 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.08; }
-h2 { font-size: 25px; line-height: 1.2; }
-p { margin: 0; max-width: 66ch; }
-.lead { color: var(--muted); font-size: 18px; margin-top: 10px; }
-.notice { border-left: 3px solid var(--dead); padding: 2px 0 2px 12px; color: var(--muted); font-size: 14px; }
-section { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; display: grid; gap: 16px; min-width: 0; }
-.stage { font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--alive); }
-.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.stack { display: grid; gap: 14px; min-width: 0; }
-video { width: 100%; display: block; background: var(--film); border-radius: 4px; aspect-ratio: 480 / 368; }
+  --bg: #18222b; --panel: #1f2b35; --ink: #e8eeea; --muted: #a6b5ba; --line: #33424d;
+  --alive: #bd72c4; --dead: #d2783d; --neuron: #38ac7c; --track: #2c3944; --film: #0e161c; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--body); font-variant-numeric: lining-nums tabular-nums; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); font-weight: 800; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(54px, 10.5vw, 124px); line-height: .94; color: var(--on-sky); max-width: 11em; }
+h2 { font-size: clamp(36px, 5.4vw, 60px); line-height: 1.02; max-width: 17em; }
+h3 { font-size: clamp(27px, 3.4vw, 34px); line-height: 1.08; }
+p { margin: 0; max-width: 66ch; text-wrap: pretty; }
+a { color: var(--alive); text-underline-offset: 3px; }
+.hero { background: var(--sky); }
+.hero .wrap { padding-block: clamp(36px, 7vw, 76px) clamp(20px, 3vw, 34px); display: grid; gap: 16px; }
+.lead { color: var(--on-sky-soft); font-size: clamp(18px, 2vw, 21px); line-height: 1.45; max-width: 52ch; }
+#officialVideo { width: 100%; aspect-ratio: 3 / 1; object-fit: cover; border-radius: 0; background: var(--sky); }
+.caption { padding-top: 10px; font-size: 14px; color: var(--muted); max-width: none; }
+.result { --panel: var(--bg); padding-block: 52px 76px; display: grid; gap: 60px; }
+.block { display: grid; gap: 18px; min-width: 0; }
+.tally { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px; align-items: start; margin-top: 10px; }
+.tally figure { display: grid; gap: 8px; }
+.tally b { font: 800 clamp(38px, 4.6vw, 52px)/1 var(--display); }
+.tally b small { font-size: .5em; font-weight: 700; color: var(--muted); }
+.tally span { font-size: 15px; color: var(--muted); }
+.tally .main b, .tally .main span { color: var(--alive); }
+.attempts { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 2px; }
+.attempts i { aspect-ratio: 1; background: var(--track); border-radius: 1px; }
+.attempts i.on { background: var(--muted); }
+.main .attempts i.on { background: var(--alive); }
+.demo { background: var(--panel); padding-block: 64px 76px; }
+.demo .wrap { display: grid; gap: 64px; }
+.demo-head { display: grid; gap: 14px; }
+#notice { color: var(--muted); }
+.step { display: grid; gap: 16px; min-width: 0; }
+.stage { color: var(--alive); font-size: 15px; font-weight: 600; }
+.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.flip { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+.flip > figure { order: 2; }
+.stack { display: grid; gap: 16px; min-width: 0; }
+video { width: 100%; display: block; background: var(--film); border-radius: 3px; aspect-ratio: 480 / 368; }
 figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
-figcaption { font: 600 13px var(--mono); color: var(--muted); }
+figcaption { font-size: 14px; font-weight: 500; color: var(--muted); }
 .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.fact b { display: block; font: 600 24px var(--mono); font-variant-numeric: tabular-nums; }
-.fact span { font-size: 13px; color: var(--muted); }
-label { font-weight: 700; display: block; margin-bottom: 6px; }
+.fact b { display: block; font: 800 34px/1.05 var(--display); }
+.fact span { font-size: 14px; color: var(--muted); }
+label { font-weight: 600; display: block; margin-bottom: 6px; }
 input[type=range] { width: 100%; accent-color: var(--alive); }
-input[type=range]:focus-visible, button:focus-visible { outline: 2px solid var(--alive); outline-offset: 2px; }
-.ticks { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--muted); }
+input[type=range]:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--alive); outline-offset: 2px; }
+.ticks { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
 .brain { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 canvas { width: 100%; max-width: 220px; aspect-ratio: 1; display: block; }
-.key { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
-.key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+.key { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
 .choices { display: flex; flex-wrap: wrap; gap: 8px; }
-button { font: 700 14px var(--body); color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; cursor: pointer; }
-button[aria-pressed=true] { background: var(--alive); border-color: var(--alive); color: var(--panel); }
-svg text { font: 12px var(--mono); fill: var(--muted); }
+button { font: 600 15px var(--body); color: var(--ink); background: transparent; border: 1px solid var(--muted); border-radius: 3px; padding: 9px 13px; cursor: pointer; transition: background-color 150ms ease, color 150ms ease, transform 100ms ease; }
+button:hover { background: var(--track); }
+button:active { transform: translateY(1px); }
+button[aria-pressed=true], button[aria-pressed=true]:hover { background: var(--alive); border-color: var(--alive); color: var(--panel); }
+svg text { font: 13px var(--body); fill: var(--muted); }
 svg .value { fill: var(--ink); font-weight: 600; }
 .chart { width: 100%; height: auto; display: block; }
 .explain { color: var(--muted); font-size: 15px; }
-h3 { font: 700 18px var(--display); margin: 0; }
-#officialVideo { aspect-ratio: 3 / 1; }
-.facts.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .forest { display: grid; min-width: 0; }
-.frow { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 3.5rem 6.5rem 5rem; gap: 4px 14px; align-items: center; padding-block: 7px; }
-.fhead { font: 12px var(--mono); color: var(--muted); padding-block: 0 4px; }
-.fgroup { font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-block: 14px 4px; border-bottom: 1px solid var(--line); }
-.fname { font-size: 15px; min-width: 0; }
+.frow { display: grid; grid-template-columns: minmax(0, 13.5rem) minmax(0, 1fr) 4rem 6.5rem 5rem; gap: 4px 14px; align-items: center; padding-block: 8px; }
+.fhead { font-size: 13px; color: var(--muted); padding-block: 0 4px; }
+.fgroup { font-size: 14px; font-weight: 600; color: var(--muted); padding-block: 16px 5px; border-bottom: 1px solid var(--line); }
+.fname { font-size: 16px; min-width: 0; }
 .fhead .fname { font: inherit; }
-.main .fname { font-weight: 700; }
-.fsub .fname, .fnote { color: var(--muted); font-size: 13px; }
+.main .fname { font-weight: 700; color: var(--alive); }
+.fsub .fname, .fnote { color: var(--muted); font-size: 14px; }
 .ftrack { position: relative; height: 18px; min-width: 0; display: block; }
 .ftrack i { position: absolute; top: 50%; display: block; }
 .ftrack .tick { width: 1px; height: 100%; top: 0; background: var(--line); }
@@ -73,113 +93,136 @@ h3 { font: 700 18px var(--display); margin: 0; }
 .ftrack .case { width: 9px; height: 9px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 1.5px var(--panel); }
 .axis { position: relative; height: 16px; display: block; min-width: 0; }
 .axis b { position: absolute; transform: translateX(-50%); font-weight: 400; }
-.fnum { font: 13px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
-.fnum.big { font-weight: 600; font-size: 15px; }
-.fnote { grid-column: 3 / -1; text-align: right; font-family: var(--mono); }
+.fnum { font-size: 14px; text-align: right; }
+.fnum.big { font-weight: 700; font-size: 16px; }
+.main .fnum.big { color: var(--alive); }
+.fnote { grid-column: 3 / -1; text-align: right; }
 .scatters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .scatter { display: grid; gap: 6px; min-width: 0; }
-.scatter h4 { font: 600 13px var(--mono); color: var(--muted); margin: 0; }
-.plot { position: relative; height: 150px; margin: 6px 8px 22px 24px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.scatter h4 { font-size: 15px; font-weight: 600; color: var(--muted); margin: 0; }
+.plot { position: relative; height: 170px; margin: 6px 8px 24px 26px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .plot i { position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, 50%); background: var(--muted); box-shadow: 0 0 0 1.5px var(--panel); }
-.plot i.hit { width: 10px; height: 10px; background: var(--alive); }
-.plot b { position: absolute; font: 400 11px var(--mono); color: var(--muted); }
+.plot i.hit { width: 11px; height: 11px; background: var(--alive); }
+.plot b { position: absolute; font-size: 12px; font-weight: 400; color: var(--muted); }
 .plot b.x { top: calc(100% + 5px); transform: translateX(-50%); }
 .plot b.y { right: calc(100% + 5px); transform: translateY(50%); }
-.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; margin: 0; padding: 0; list-style: none; }
-.limits li { min-width: 0; font-size: 15px; color: var(--muted); }
-.limits b { display: block; color: var(--ink); }
+.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 36px; margin: 0; padding: 0; list-style: none; }
+.limits li { min-width: 0; font-size: 16px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
+.limits b { display: block; color: var(--ink); font-weight: 600; }
+.foot { padding-block: 26px 40px; font-size: 15px; color: var(--muted); }
 @media (max-width: 760px) {
-  .split { grid-template-columns: minmax(0, 1fr); } .trio { grid-template-columns: minmax(0, 1fr); }
-  .facts.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .limits, .scatters { grid-template-columns: minmax(0, 1fr); }
-  .frow { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: 9px; }
+  .split, .flip { grid-template-columns: minmax(0, 1fr); } .flip > figure { order: 0; }
+  .trio, .limits, .scatters { grid-template-columns: minmax(0, 1fr); }
+  .tally { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 20px; }
+  .frow { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: 10px; }
   .fname, .ftrack, .axis, .fnote { grid-column: 1 / -1; }
   .fnum, .fnote { text-align: left; }
-  .fnum::before { content: attr(data-label); color: var(--muted); font-weight: 400; font-size: 11px; display: block; }
+  .fnum::before { content: attr(data-label); color: var(--muted); font-weight: 400; font-size: 12px; display: block; }
   .fhead .fname, .fhead .fnum { display: none; }
 }
-@media (prefers-reduced-motion: reduce) { video { animation: none; } }
+@media (prefers-reduced-motion: reduce) { button { transition: none; } }
 </style>
 
-<main class="page">
-  <header>
+<header class="hero">
+  <div class="wrap">
     <h1>¿Puede un robot volver a caminar solo?</h1>
     <p class="lead">Un robot simulado aprende a caminar, pierde parte de sus neuronas e intenta recuperarse con el recuerdo de cómo se movía sano.</p>
-  </header>
+  </div>
+  <video id="officialVideo" muted autoplay loop playsinline aria-label="El mismo robot sano, dañado y reparado, caminando lado a lado"></video>
+</header>
 
-  <section>
-    <div class="stage">Resultado oficial</div>
-    <h2 id="officialTitle"></h2>
-    <p id="officialLead"></p>
-    <figure><video id="officialVideo" muted autoplay loop playsinline></video><figcaption id="officialCaption"></figcaption></figure>
-    <div class="facts four" id="officialFacts"></div>
-    <h3>Recuperación por método</h3>
-    <div class="forest" id="forest"></div>
-    <p class="explain" id="forestKey"></p>
-    <h3>Un error bajo no garantiza que camine</h3>
-    <p id="offlineText"></p>
-    <div class="scatters" id="scatters"></div>
-    <div class="key"><span><i style="background:var(--alive)"></i>Mutación</span><span><i style="background:var(--muted)"></i>Otros métodos</span></div>
-    <p class="explain" id="offlineKey"></p>
-    <h3>Qué no dice este resultado</h3>
-    <ul class="limits" id="limits"></ul>
+<main>
+  <div class="wrap"><p class="caption" id="officialCaption"></p></div>
+
+  <section class="result wrap">
+    <div class="block">
+      <h2 id="officialTitle"></h2>
+      <p id="officialLead"></p>
+      <div class="tally" id="tally"></div>
+      <p class="explain">Cada cuadrado es un intento. Lleno significa que el robot no se cayó.</p>
+    </div>
+    <div class="block">
+      <h3>Recuperación por método</h3>
+      <div class="forest" id="forest"></div>
+      <p class="explain" id="forestKey"></p>
+    </div>
+    <div class="block">
+      <h3>Un error bajo no garantiza que camine</h3>
+      <p id="offlineText"></p>
+      <div class="scatters" id="scatters"></div>
+      <div class="key"><span><i style="background:var(--alive)"></i>Mutación</span><span><i style="background:var(--muted)"></i>Otros métodos</span></div>
+      <p class="explain" id="offlineKey"></p>
+    </div>
+    <div class="block">
+      <h3>Qué no dice este resultado</h3>
+      <ul class="limits" id="limits"></ul>
+    </div>
   </section>
 
-  <p class="notice" id="notice"></p>
-
-  <section>
-    <div class="stage">Demostración · Etapa 1 · Aprende</div>
-    <h2>De caerse a caminar</h2>
-    <div class="split">
-      <figure><video id="learnVideo" muted autoplay loop playsinline></video><figcaption id="learnCaption"></figcaption></figure>
-      <div class="stack">
-        <div>
-          <label for="learnRange">Experiencia acumulada</label>
-          <input id="learnRange" type="range" min="0" step="1">
-          <div class="ticks" id="learnTicks"></div>
-        </div>
-        <div class="facts" id="learnFacts"></div>
-        <svg class="chart" id="learnChart" viewBox="0 0 420 190" role="img" aria-label="Rendimiento según los pasos de entrenamiento"></svg>
+  <div class="demo">
+    <div class="wrap">
+      <div class="demo-head">
+        <h2>Cómo cambia el robot en cada etapa</h2>
+        <p id="notice"></p>
       </div>
-    </div>
-  </section>
 
-  <section>
-    <div class="stage">Demostración · Etapa 2 · Se daña</div>
-    <h2>Cuántas neuronas puede perder</h2>
-    <div class="split">
-      <figure><video id="damageVideo" muted autoplay loop playsinline></video><figcaption id="damageCaption"></figcaption></figure>
-      <div class="stack">
-        <div>
-          <label for="damageRange">Neuronas muertas</label>
-          <input id="damageRange" type="range" min="0" step="1">
-          <div class="ticks" id="damageTicks"></div>
+      <section class="step">
+        <p class="stage">Etapa 1 de la demostración</p>
+        <h3>De caerse a caminar</h3>
+        <div class="split">
+          <figure><video id="learnVideo" muted autoplay loop playsinline></video><figcaption id="learnCaption"></figcaption></figure>
+          <div class="stack">
+            <div>
+              <label for="learnRange">Experiencia acumulada</label>
+              <input id="learnRange" type="range" min="0" step="1">
+              <div class="ticks" id="learnTicks"></div>
+            </div>
+            <div class="facts" id="learnFacts"></div>
+            <svg class="chart" id="learnChart" viewBox="0 0 420 190" role="img" aria-label="Rendimiento según los pasos de entrenamiento"></svg>
+          </div>
         </div>
-        <div class="facts" id="damageFacts"></div>
-        <div class="brain">
-          <figure><canvas id="h1" width="220" height="220"></canvas><figcaption>Capa 1 · 256 neuronas</figcaption></figure>
-          <figure><canvas id="h2" width="220" height="220"></canvas><figcaption>Capa 2 · 256 neuronas</figcaption></figure>
-        </div>
-        <div class="key"><span><i style="background:var(--alive)"></i>Viva</span><span><i style="background:var(--dead)"></i>Muerta</span></div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <section>
-    <div class="stage">Demostración · Etapa 3 · Se repara</div>
-    <h2>Intentos de recuperación, sin recompensa ni simulador</h2>
-    <div class="choices" id="methodChoices"></div>
-    <p class="explain" id="methodExplain"></p>
-    <div class="trio">
-      <figure><video id="triHealthy" muted autoplay loop playsinline></video><figcaption>Sano</figcaption></figure>
-      <figure><video id="triDamaged" muted autoplay loop playsinline></video><figcaption id="triDamagedCaption">Dañado</figcaption></figure>
-      <figure><video id="triRepaired" muted autoplay loop playsinline></video><figcaption id="triRepairedCaption">Reparado</figcaption></figure>
+      <section class="step">
+        <p class="stage">Etapa 2 de la demostración</p>
+        <h3>Cuántas neuronas puede perder</h3>
+        <div class="split flip">
+          <figure><video id="damageVideo" muted autoplay loop playsinline></video><figcaption id="damageCaption"></figcaption></figure>
+          <div class="stack">
+            <div>
+              <label for="damageRange">Neuronas muertas</label>
+              <input id="damageRange" type="range" min="0" step="1">
+              <div class="ticks" id="damageTicks"></div>
+            </div>
+            <div class="facts" id="damageFacts"></div>
+            <div class="brain">
+              <figure><canvas id="h1" width="220" height="220"></canvas><figcaption>Capa 1, 256 neuronas</figcaption></figure>
+              <figure><canvas id="h2" width="220" height="220"></canvas><figcaption>Capa 2, 256 neuronas</figcaption></figure>
+            </div>
+            <div class="key"><span><i style="background:var(--neuron)"></i>Viva</span><span><i style="background:var(--dead)"></i>Muerta</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <p class="stage">Etapa 3 de la demostración</p>
+        <h3>Intentos de recuperación, sin recompensa ni simulador</h3>
+        <div class="choices" id="methodChoices"></div>
+        <p class="explain" id="methodExplain"></p>
+        <div class="trio">
+          <figure><video id="triHealthy" muted autoplay loop playsinline></video><figcaption>Sano</figcaption></figure>
+          <figure><video id="triDamaged" muted autoplay loop playsinline></video><figcaption id="triDamagedCaption">Dañado</figcaption></figure>
+          <figure><video id="triRepaired" muted autoplay loop playsinline></video><figcaption id="triRepairedCaption">Reparado</figcaption></figure>
+        </div>
+        <div class="facts" id="methodFacts"></div>
+        <svg class="chart" id="recoveryChart" viewBox="0 0 760 200" role="img" aria-label="Recuperación por método"></svg>
+        <p id="finding"></p>
+      </section>
     </div>
-    <div class="facts" id="methodFacts"></div>
-    <svg class="chart" id="recoveryChart" viewBox="0 0 760 200" role="img" aria-label="Recuperación por método"></svg>
-    <p id="finding"></p>
-  </section>
+  </div>
 </main>
+
+<footer class="foot wrap"><p>Todo ocurre en simulación. <a href="https://github.com/kenymtz/robot-rehab">Código en GitHub</a></p></footer>
 
 <script id="data" type="application/json">__DATA__</script>
 <script>
@@ -233,7 +276,8 @@ $("notice").textContent = `Desde acá sigue una demostración aparte y más chic
   $("officialLead").textContent = `${O.robots} robots entrenados con ${big(O.steps)} pasos cada uno perdieron ${tag}% de sus neuronas, en ${O.patterns} patrones de daño que no se usaron para ajustar nada. La reparación principal ajustó los pesos sobrevivientes contra una memoria de cómo se movían sanos, sabiendo qué neuronas murieron. Durante la reparación no usó recompensa, simulador ni gradientes. Cada caso se midió en ${O.attempts} intentos.`;
   $("officialCaption").textContent = `Caso mediano: robot ${O.median_case.robot}, patrón ${O.median_case.pattern}, ${pct(O.median_case.recovery)} recuperado. Es un intento de cada uno. El panel dañado queda quieto porque ese intento terminó en caída.`;
   $("officialVideo").src = O.video;
-  facts($("officialFacts"), [[pct(main.median), "de lo perdido volvió"], [`${main.survivors}/${main.episodes}`, "reparado, sin caerse"], [`${O.damaged.survivors}/${O.damaged.episodes}`, "dañado, sin caerse"], [`${O.healthy.survivors}/${O.healthy.episodes}`, "sano, sin caerse"]]);
+  const attempts = (title, tally, isMain) => `<figure class="${isMain ? "main" : ""}"><b>${tally.survivors}<small> de ${tally.episodes}</small></b><span>${title}</span><div class="attempts" role="img" aria-label="${title}: ${tally.survivors} de ${tally.episodes} intentos sin caerse">${Array.from({ length: tally.episodes }, (_, i) => `<i${i < tally.survivors ? ' class="on"' : ""}></i>`).join("")}</div></figure>`;
+  $("tally").innerHTML = attempts("Sano", O.healthy) + attempts("Dañado, sin reparar", O.damaged) + attempts("Reparado con mutación", main, true) + attempts("Reparado con gradientes", clone);
   const F = O.offline, rho = n => n.toFixed(2).replace(".", ","), err = n => n.toLocaleString("es-UY", { maximumSignificantDigits: 2 });
   const { higher, lower } = F.contrast, band = F.bands.find(b => b.low === 0), mid = F.bands.find(b => b.low === 0.01);
   $("offlineText").textContent = `Comparando métodos, menos error contra la memoria suele dar mejor rendimiento (correlación de Spearman ${rho(F.all_methods.return)}, ${F.all_methods.cases} casos). Dentro de la mutación esa relación se debilita (${rho(F.mutation.return)}, ${F.mutation.cases} casos), y el mismo error no vale igual en cada robot. Con un error de ${err(higher.val_mse)}, el robot ${higher.robot} no se cayó en ${higher.survivors} de ${F.attempts} intentos. Con ${err(lower.val_mse)}, el robot ${lower.robot} lo logró solo en ${lower.survivors}.`;
@@ -271,7 +315,7 @@ function showLearn(index) {
   const p = D.learning[index];
   setVideo($("learnVideo"), "learn_" + p.steps);
   $("learnCaption").textContent = p.steps === 0 ? "Sin entrenar" : whole(p.steps) + " pasos";
-  facts($("learnFacts"), [[whole(p.return), "rendimiento"], [`${p.survivors}/${p.episodes}`, "intentos sin caerse"], [p.distance.toFixed(1) + " m", "distancia media"]]);
+  facts($("learnFacts"), [[whole(p.return), "rendimiento"], [`${p.survivors}/${p.episodes}`, "intentos sin caerse"], [p.distance.toFixed(1).replace(".", ",") + " m", "distancia media"]]);
   learnChart(index);
 }
 $("learnRange").max = D.learning.length - 1;
@@ -283,14 +327,15 @@ function drawBrain(id, dead) {
   const c = $(id), g = c.getContext("2d"), cell = c.width / 16, set = new Set(dead);
   g.clearRect(0, 0, c.width, c.height);
   for (let i = 0; i < 256; i++) {
-    g.fillStyle = css(set.has(i) ? "--dead" : "--alive");
-    g.fillRect(i % 16 * cell + 1, Math.floor(i / 16) * cell + 1, cell - 2, cell - 2);
+    g.fillStyle = css(set.has(i) ? "--dead" : "--neuron");
+    const inset = set.has(i) ? 4 : 1; // dead units are also smaller, so color is not the only cue
+    g.fillRect(i % 16 * cell + inset, Math.floor(i / 16) * cell + inset, cell - 2 * inset, cell - 2 * inset);
   }
 }
 function showDamage(index) {
   const d = D.damage[index], tag = Math.round(d.fraction * 100);
   setVideo($("damageVideo"), "damage_" + tag);
-  const chosen = d.fraction === D.level ? " · nivel usado en esta demostración" : "";
+  const chosen = d.fraction === D.level ? ", nivel usado en esta demostración" : "";
   $("damageCaption").textContent = tag + "% de neuronas muertas" + chosen;
   facts($("damageFacts"), [[pct(d.ratio), "del rendimiento sano"], [`${d.survivors}/${d.episodes}`, "intentos sin caerse"], [String(d.killed.h1.length * 2), "neuronas muertas"]]);
   drawBrain("h1", d.killed.h1); drawBrain("h2", d.killed.h2);
@@ -312,7 +357,7 @@ function recoveryChart(active) {
   rows.forEach((r, i) => {
     const y = 10 + i * 44, v = r.recovery ?? 0, a = Math.min(x(0), x(v)), w = Math.abs(x(v) - x(0));
     out += `<text x="${left - 10}" y="${y + 17}" text-anchor="end" class="${r.method === active ? "value" : ""}">${NAMES[r.method]}</text>` +
-      `<rect x="${a}" y="${y + 3}" width="${Math.max(w, 2)}" height="20" rx="3" fill="${css(r.method === active ? "--alive" : "--track")}"/>` +
+      `<rect x="${a}" y="${y + 3}" width="${Math.max(w, 2)}" height="20" rx="3" fill="${css(r.method === active ? "--alive" : "--muted")}"/>` +
       `<text x="${Math.max(x(v), x(0)) + 8}" y="${y + 18}" class="value">${pct(r.recovery)}</text>`;
   });
   svg.innerHTML = out;
@@ -324,7 +369,7 @@ function showMethod(method) {
   setVideo($("triHealthy"), "learn_" + D.steps);
   setVideo($("triDamaged"), "repair_none");
   setVideo($("triRepaired"), "repair_" + method);
-  $("triDamagedCaption").textContent = `Dañado · ${tag}%`;
+  $("triDamagedCaption").textContent = `Dañado, ${tag}%`;
   $("triRepairedCaption").textContent = NAMES[method];
   facts($("methodFacts"), [[pct(r.recovery), "de lo perdido volvió"], [`${r.survivors}/${r.episodes}`, "intentos sin caerse"], [whole(r.return), "rendimiento"]]);
   recoveryChart(method);
