@@ -1,6 +1,6 @@
 """Put the demo's data and clips and the official results into one page: runs/demo/site/index.html.
 
-Run after scripts/demo_render.py and after the official run.
+Run after scripts/demo_render.py, the official run and scripts/offline_error.py.
 Usage: uv run --frozen python scripts/demo_build.py
 """
 import base64
@@ -49,7 +49,8 @@ def official() -> dict:
             "pairs": {"large": config["memory"]["repair_pairs"], "small": config["memory"]["small_repair_pairs"]},
             "conditions": conditions, "cases": sorted(cases, key=lambda c: c["recovery"]),
             "median_case": summary["median_case"], "healthy": tally("healthy", "large"),
-            "damaged": tally("none", "large"), "video": video_uri(RUN / "report" / "comparacion.mp4")}
+            "damaged": tally("none", "large"), "offline": read(RUN / "offline_error.json"),
+            "video": video_uri(RUN / "report" / "comparacion.mp4")}
 
 
 data = read(SITE / "data.json")

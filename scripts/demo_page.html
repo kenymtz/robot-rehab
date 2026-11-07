@@ -76,13 +76,22 @@ h3 { font: 700 18px var(--display); margin: 0; }
 .fnum { font: 13px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
 .fnum.big { font-weight: 600; font-size: 15px; }
 .fnote { grid-column: 3 / -1; text-align: right; font-family: var(--mono); }
+.scatters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.scatter { display: grid; gap: 6px; min-width: 0; }
+.scatter h4 { font: 600 13px var(--mono); color: var(--muted); margin: 0; }
+.plot { position: relative; height: 150px; margin: 6px 8px 22px 24px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.plot i { position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, 50%); background: var(--muted); box-shadow: 0 0 0 1.5px var(--panel); }
+.plot i.hit { width: 10px; height: 10px; background: var(--alive); }
+.plot b { position: absolute; font: 400 11px var(--mono); color: var(--muted); }
+.plot b.x { top: calc(100% + 5px); transform: translateX(-50%); }
+.plot b.y { right: calc(100% + 5px); transform: translateY(50%); }
 .limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; margin: 0; padding: 0; list-style: none; }
 .limits li { min-width: 0; font-size: 15px; color: var(--muted); }
 .limits b { display: block; color: var(--ink); }
 @media (max-width: 760px) {
   .split { grid-template-columns: minmax(0, 1fr); } .trio { grid-template-columns: minmax(0, 1fr); }
   .facts.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .limits { grid-template-columns: minmax(0, 1fr); }
+  .limits, .scatters { grid-template-columns: minmax(0, 1fr); }
   .frow { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: 9px; }
   .fname, .ftrack, .axis, .fnote { grid-column: 1 / -1; }
   .fnum, .fnote { text-align: left; }
@@ -107,6 +116,11 @@ h3 { font: 700 18px var(--display); margin: 0; }
     <h3>Recuperación por método</h3>
     <div class="forest" id="forest"></div>
     <p class="explain" id="forestKey"></p>
+    <h3>Un error bajo no garantiza que camine</h3>
+    <p id="offlineText"></p>
+    <div class="scatters" id="scatters"></div>
+    <div class="key"><span><i style="background:var(--alive)"></i>Mutación</span><span><i style="background:var(--muted)"></i>Otros métodos</span></div>
+    <p class="explain" id="offlineKey"></p>
     <h3>Qué no dice este resultado</h3>
     <ul class="limits" id="limits"></ul>
   </section>
@@ -220,6 +234,15 @@ $("notice").textContent = `Desde acá sigue una demostración aparte y más chic
   $("officialCaption").textContent = `Caso mediano: robot ${O.median_case.robot}, patrón ${O.median_case.pattern}, ${pct(O.median_case.recovery)} recuperado. Es un intento de cada uno. El panel dañado queda quieto porque ese intento terminó en caída.`;
   $("officialVideo").src = O.video;
   facts($("officialFacts"), [[pct(main.median), "de lo perdido volvió"], [`${main.survivors}/${main.episodes}`, "reparado, sin caerse"], [`${O.damaged.survivors}/${O.damaged.episodes}`, "dañado, sin caerse"], [`${O.healthy.survivors}/${O.healthy.episodes}`, "sano, sin caerse"]]);
+  const F = O.offline, rho = n => n.toFixed(2).replace(".", ","), err = n => n.toLocaleString("es-UY", { maximumSignificantDigits: 2 });
+  const { higher, lower } = F.contrast, band = F.bands.find(b => b.low === 0), mid = F.bands.find(b => b.low === 0.01);
+  $("offlineText").textContent = `Comparando métodos, menos error contra la memoria suele dar mejor rendimiento (correlación de Spearman ${rho(F.all_methods.return)}, ${F.all_methods.cases} casos). Dentro de la mutación esa relación se debilita (${rho(F.mutation.return)}, ${F.mutation.cases} casos), y el mismo error no vale igual en cada robot. Con un error de ${err(higher.val_mse)}, el robot ${higher.robot} no se cayó en ${higher.survivors} de ${F.attempts} intentos. Con ${err(lower.val_mse)}, el robot ${lower.robot} lo logró solo en ${lower.survivors}.`;
+  $("offlineKey").textContent = `Cada punto es un caso reparado con la memoria grande. Horizontal: error contra la memoria, en escala logarítmica. Vertical: intentos sin caerse, de ${F.attempts}. Sumando las dos memorias, con error menor a ${err(band.high)} no se cayó en ${pct(band.standing)} de los intentos, y entre ${err(mid.low)} y ${err(mid.high)} en ${pct(mid.standing)}. Son pocos casos, así que es una observación y no una ley.`;
+  const XMIN = Math.log10(0.001), XMAX = Math.log10(0.3), px = v => ((Math.log10(v) - XMIN) / (XMAX - XMIN) * 100).toFixed(2) + "%", py = v => (v / F.attempts * 100).toFixed(2) + "%";
+  const axes = [0.001, 0.01, 0.1].map(v => `<b class="x" style="left:${px(v)}">${err(v)}</b>`).join("") + [0, F.attempts / 2, F.attempts].map(v => `<b class="y" style="bottom:${py(v)}">${v}</b>`).join("");
+  const dot = c => `<i class="${c.condition === "mutation" ? "hit" : ""}" style="left:${px(c.val_mse)};bottom:${py(c.survivors)}" title="${NAMES[c.condition]}, patrón ${c.pattern}: error ${err(c.val_mse)}, ${c.survivors} de ${F.attempts} sin caerse"></i>`;
+  const robots = [...new Set(F.cases.map(c => c.robot))].sort();
+  $("scatters").innerHTML = robots.map(r => { const mine = F.cases.filter(c => c.robot === r); return `<div class="scatter"><h4>Robot ${r}</h4><div class="plot">${axes}${mine.filter(c => c.condition !== "mutation").map(dot).join("")}${mine.filter(c => c.condition === "mutation").map(dot).join("")}</div></div>`; }).join("");
   const limits = [
     ["Todavía se cae", `El robot reparado se cayó en ${falls} de ${main.episodes} intentos, ${pct(falls / main.episodes)} del total.`],
     [`Vale para ${tag}% de daño`, `Ese nivel lo eligió una regla fija: el primero que baja el rendimiento mediano a ${pct(O.max_ratio)} o menos. Otros niveles no tuvieron medición oficial de reparación.`],
