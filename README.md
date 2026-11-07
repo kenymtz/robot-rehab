@@ -95,3 +95,7 @@ El análisis del error se reproduce después de esa corrida:
 ```bash
 uv run --frozen python scripts/offline_error.py
 ```
+
+## Licencia
+
+MIT. Ver [LICENSE](LICENSE).

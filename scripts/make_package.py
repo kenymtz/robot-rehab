@@ -3,7 +3,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ["run.sh", "pyproject.toml", "uv.lock", ".python-version", "README.md"]
+FILES = ["run.sh", "pyproject.toml", "uv.lock", ".python-version", "README.md", "LICENSE"]
 FOLDERS = ["configs", "src", "tests", "scripts"]
 
 
