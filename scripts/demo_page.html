@@ -95,7 +95,7 @@ h3 { font: 700 18px var(--display); margin: 0; }
 <main class="page">
   <header>
     <h1>¿Puede un robot volver a caminar solo?</h1>
-    <p class="lead">Un robot simulado aprende a caminar, pierde parte de sus neuronas e intenta recuperarse usando solo el recuerdo de cómo se movía sano.</p>
+    <p class="lead">Un robot simulado aprende a caminar, pierde parte de sus neuronas e intenta recuperarse con el recuerdo de cómo se movía sano.</p>
   </header>
 
   <section>
@@ -216,7 +216,7 @@ $("notice").textContent = `Desde acá sigue una demostración aparte y más chic
   $("forest").innerHTML = axis + group("large") + group("small");
   $("forestKey").textContent = "Punto: mediana de recuperación. Línea: intervalo del 95%. 0% es quedar igual que el robot dañado y 100% es volver a su rendimiento sano.";
   $("officialTitle").textContent = `La mutación recuperó ${pct(main.median)} de lo perdido, pero el robot todavía se cae`;
-  $("officialLead").textContent = `${O.robots} robots entrenados con ${big(O.steps)} pasos cada uno perdieron ${tag}% de sus neuronas, en ${O.patterns} patrones de daño que no se usaron para ajustar nada. La reparación principal usó solo la memoria de cómo se movían sanos, sin recompensa, sin simulador y sin gradientes. Cada caso se midió en ${O.attempts} intentos.`;
+  $("officialLead").textContent = `${O.robots} robots entrenados con ${big(O.steps)} pasos cada uno perdieron ${tag}% de sus neuronas, en ${O.patterns} patrones de daño que no se usaron para ajustar nada. La reparación principal ajustó los pesos sobrevivientes contra una memoria de cómo se movían sanos, sabiendo qué neuronas murieron. Durante la reparación no usó recompensa, simulador ni gradientes. Cada caso se midió en ${O.attempts} intentos.`;
   $("officialCaption").textContent = `Caso mediano: robot ${O.median_case.robot}, patrón ${O.median_case.pattern}, ${pct(O.median_case.recovery)} recuperado. Es un intento de cada uno. El panel dañado queda quieto porque ese intento terminó en caída.`;
   $("officialVideo").src = O.video;
   facts($("officialFacts"), [[pct(main.median), "de lo perdido volvió"], [`${main.survivors}/${main.episodes}`, "reparado, sin caerse"], [`${O.damaged.survivors}/${O.damaged.episodes}`, "dañado, sin caerse"], [`${O.healthy.survivors}/${O.healthy.episodes}`, "sano, sin caerse"]]);
